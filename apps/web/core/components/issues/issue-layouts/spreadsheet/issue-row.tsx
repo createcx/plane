@@ -135,7 +135,7 @@ export const SpreadsheetIssueRow = observer(function SpreadsheetIssueRow(props: 
             quickActions={quickActions}
             canEditProperties={canEditProperties}
             nestingLevel={nestingLevel + 1}
-            spacingLeft={spacingLeft + 12}
+            spacingLeft={spacingLeft + 20}
             isEstimateEnabled={isEstimateEnabled}
             updateIssue={updateIssue}
             portalElement={portalElement}
@@ -277,8 +277,10 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
                 "shadow-[8px_22px_22px_10px_rgba(0,0,0,0.05)]": isScrolled.current,
               }
             )}
-            style={nestingLevel > 0 ? { paddingLeft: subIssueIndentation } : undefined}
           >
+            {/* sub-issue indentation — pushes entire row content right */}
+            {nestingLevel > 0 && <div className="flex-shrink-0" style={{ width: subIssueIndentation }} />}
+
             {/* Identifier section - conditionally rendered */}
             {displayProperties?.key && (
               <div className="flex-shrink-0 flex items-center h-full min-w-24">
