@@ -36,6 +36,7 @@ from plane.app.views import (
     WorkspaceHomePreferenceViewSet,
     WorkspaceStickyViewSet,
     WorkspaceUserPreferenceViewSet,
+    WorkspaceIssueTypesEndpoint,
 )
 
 
@@ -256,5 +257,16 @@ urlpatterns = [
         "workspaces/<str:slug>/sidebar-preferences/",
         WorkspaceUserPreferenceViewSet.as_view(),
         name="workspace-user-preference",
+    ),
+    # Issue Types (custom patch for CE)
+    path(
+        "workspaces/<str:slug>/issue-types/",
+        WorkspaceIssueTypesEndpoint.as_view(),
+        name="workspace-issue-types",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issue-types/",
+        WorkspaceIssueTypesEndpoint.as_view(),
+        name="project-issue-types",
     ),
 ]

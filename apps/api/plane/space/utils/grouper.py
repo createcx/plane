@@ -94,6 +94,7 @@ def issue_on_results(
         "parent_id",
         "cycle_id",
         "created_by",
+        "type_id",
         "state__group",
     ]
 
