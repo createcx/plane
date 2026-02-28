@@ -377,14 +377,38 @@ def filter_inbox_status(params, issue_filter, method, prefix=""):
     return issue_filter
 
 
+def filter_issue_type(params, issue_filter, method, prefix=""):
+    if method == "GET":
+        issue_types = [item for item in params.get("issue_type").split(",") if item != "null"]
+        issue_types = filter_valid_uuids(issue_types)
+        if len(issue_types) and "" not in issue_types:
+            issue_filter[f"{prefix}type_id__in"] = issue_types
+    else:
+        if params.get("issue_type", None) and len(params.get("issue_type")) and params.get("issue_type") != "null":
+            issue_filter[f"{prefix}type_id__in"] = params.get("issue_type")
+    return issue_filter
+
+
+def _has_type_filter(params):
+    """Check if type/issue_type filters are active in either legacy or rich filter params."""
+    # Legacy param
+    if params.get("issue_type") and params.get("issue_type") != "null":
+        return True
+    # Rich filter JSON — check if type_id appears anywhere in the filters param
+    filters_json = params.get("filters", "")
+    if filters_json and "type_id" in str(filters_json):
+        return True
+    return False
+
+
 def filter_sub_issue_toggle(params, issue_filter, method, prefix=""):
     if method == "GET":
         sub_issue = params.get("sub_issue", "false")
-        if sub_issue == "false":
+        if sub_issue == "false" and not _has_type_filter(params):
             issue_filter[f"{prefix}parent__isnull"] = True
     else:
         sub_issue = params.get("sub_issue", "false")
-        if sub_issue == "false":
+        if sub_issue == "false" and not _has_type_filter(params):
             issue_filter[f"{prefix}parent__isnull"] = True
     return issue_filter
 
@@ -454,6 +478,7 @@ def issue_filters(query_params, method, prefix=""):
         "sub_issue": filter_sub_issue_toggle,
         "subscriber": filter_subscribed_issues,
         "start_target_date": filter_start_target_date_issues,
+        "issue_type": filter_issue_type,
     }
 
     for key, value in ISSUE_FILTER.items():
