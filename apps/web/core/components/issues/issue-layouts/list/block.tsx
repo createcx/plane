@@ -146,9 +146,7 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
   const handleToggleExpand = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
-    if (nestingLevel >= 3) {
-      handleIssuePeekOverview(issue);
-    } else if (isExpanded) {
+    if (isExpanded) {
       setExpanded(false);
     } else {
       if (workspaceSlug && issue && issue.project_id)

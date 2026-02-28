@@ -227,9 +227,7 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
   const handleToggleExpand = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
-    if (nestingLevel >= 3) {
-      handleIssuePeekOverview(issueDetail);
-    } else if (isExpanded) {
+    if (isExpanded) {
       setExpanded(false);
     } else {
       if (workspaceSlug && issueDetail && issueDetail.project_id)
