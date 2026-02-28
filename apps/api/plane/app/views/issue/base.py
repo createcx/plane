@@ -60,7 +60,10 @@ from plane.db.models import (
     Project,
     ProjectMember,
     UserRecentVisit,
+    IssueTypeProperty,
+    IssuePropertyValue,
 )
+from plane.db.models.state import State, StateGroup
 from plane.utils.filters import ComplexFilterBackend, IssueFilterSet
 from plane.utils.global_paginator import paginate
 from plane.utils.grouper import (
@@ -666,6 +669,65 @@ class IssueViewSet(BaseViewSet):
         current_instance = json.dumps(IssueDetailSerializer(issue).data, cls=DjangoJSONEncoder)
 
         requested_data = json.dumps(self.request.data, cls=DjangoJSONEncoder)
+
+        # HITL Gate: if state is changing to a "completed" group, check for HITL role gate
+        new_state_id = request.data.get("state_id") or request.data.get("state")
+        if new_state_id and issue.type_id:
+            try:
+                target_state = State.all_state_objects.get(pk=new_state_id)
+                if target_state.group == StateGroup.COMPLETED:
+                    hitl_prop = IssueTypeProperty.objects.filter(
+                        issue_type_id=issue.type_id,
+                        key="hitl_role_gate",
+                        is_active=True,
+                        deleted_at__isnull=True,
+                    ).first()
+                    if hitl_prop:
+                        # Check if a human_summary is provided
+                        human_summary = request.data.pop("human_summary", None)
+                        if not human_summary:
+                            gate_text = ""
+                            gate_val = IssuePropertyValue.objects.filter(
+                                issue=issue,
+                                property=hitl_prop,
+                                deleted_at__isnull=True,
+                            ).first()
+                            if gate_val and gate_val.value_json.get("value"):
+                                gate_text = gate_val.value_json["value"]
+                            else:
+                                gate_text = hitl_prop.config.get("default", "")
+                            return Response(
+                                {
+                                    "error": "HITL approval required",
+                                    "hitl_gate": True,
+                                    "gate_text": gate_text,
+                                    "message": "This work item requires human approval before marking as Done. Please provide a 2-sentence human summary.",
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+                        # Save the human_summary as a property value
+                        human_summary_prop, _ = IssueTypeProperty.objects.get_or_create(
+                            issue_type_id=issue.type_id,
+                            key="human_summary",
+                            deleted_at__isnull=True,
+                            defaults={
+                                "workspace_id": issue.workspace_id,
+                                "name": "Human Summary",
+                                "field_type": "text",
+                                "category": "hitl",
+                                "is_required": False,
+                                "sort_order": 99999,
+                            },
+                        )
+                        IssuePropertyValue.objects.update_or_create(
+                            issue=issue,
+                            property=human_summary_prop,
+                            deleted_at__isnull=True,
+                            defaults={"value_json": {"value": human_summary}},
+                        )
+            except State.DoesNotExist:
+                pass
+
         serializer = IssueCreateSerializer(issue, data=request.data, partial=True, context={"project_id": project_id})
         if serializer.is_valid():
             serializer.save()

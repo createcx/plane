@@ -63,3 +63,8 @@ from .invite import WorkspaceInvitationsViewset
 from .sticky import StickyViewSet
 
 from .issue_type import IssueTypeListAPIEndpoint
+
+from .issue_type_property import (
+    IssueTypePropertyAPIEndpoint,
+    IssuePropertyValueAPIEndpoint,
+)

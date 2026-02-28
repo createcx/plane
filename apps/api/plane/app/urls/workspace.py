@@ -37,6 +37,8 @@ from plane.app.views import (
     WorkspaceStickyViewSet,
     WorkspaceUserPreferenceViewSet,
     WorkspaceIssueTypesEndpoint,
+    IssueTypePropertyEndpoint,
+    IssuePropertyValueEndpoint,
 )
 
 
@@ -268,5 +270,27 @@ urlpatterns = [
         "workspaces/<str:slug>/projects/<uuid:project_id>/issue-types/",
         WorkspaceIssueTypesEndpoint.as_view(),
         name="project-issue-types",
+    ),
+    # Issue Type Properties (custom properties system)
+    path(
+        "workspaces/<str:slug>/issue-types/<uuid:type_id>/properties/",
+        IssueTypePropertyEndpoint.as_view(),
+        name="issue-type-properties",
+    ),
+    path(
+        "workspaces/<str:slug>/issue-types/<uuid:type_id>/properties/<uuid:pk>/",
+        IssueTypePropertyEndpoint.as_view(),
+        name="issue-type-property-detail",
+    ),
+    # Issue Property Values
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/properties/",
+        IssuePropertyValueEndpoint.as_view(),
+        name="issue-property-values",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:issue_id>/properties/",
+        IssuePropertyValueEndpoint.as_view(),
+        name="work-item-property-values",
     ),
 ]

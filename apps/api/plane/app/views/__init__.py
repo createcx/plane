@@ -240,3 +240,8 @@ from .user.base import AccountEndpoint, ProfileEndpoint, UserSessionEndpoint
 from .timezone.base import TimezoneEndpoint
 
 from .issue_type import WorkspaceIssueTypesEndpoint
+
+from .issue_type_property import (
+    IssueTypePropertyEndpoint,
+    IssuePropertyValueEndpoint,
+)

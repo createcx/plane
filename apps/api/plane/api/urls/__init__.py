@@ -15,6 +15,7 @@ from .work_item import urlpatterns as work_item_patterns
 from .invite import urlpatterns as invite_patterns
 from .sticky import urlpatterns as sticky_patterns
 from .issue_type import urlpatterns as issue_type_patterns
+from .issue_type_property import urlpatterns as issue_type_property_patterns
 
 urlpatterns = [
     *asset_patterns,
@@ -30,4 +31,5 @@ urlpatterns = [
     *invite_patterns,
     *sticky_patterns,
     *issue_type_patterns,
+    *issue_type_property_patterns,
 ]

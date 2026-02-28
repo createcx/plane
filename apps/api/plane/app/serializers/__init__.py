@@ -133,3 +133,9 @@ from .draft import (
     DraftIssueSerializer,
     DraftIssueDetailSerializer,
 )
+
+from .issue_type_property import (
+    IssueTypePropertySerializer,
+    IssuePropertyValueSerializer,
+    IssuePropertyValueBulkSerializer,
+)
