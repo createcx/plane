@@ -143,17 +143,17 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
 
   const marginLeft = `${spacingLeft}px`;
 
-  const handleToggleExpand = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleToggleExpand = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
     if (nestingLevel >= 3) {
       handleIssuePeekOverview(issue);
+    } else if (isExpanded) {
+      setExpanded(false);
     } else {
-      setExpanded((prevState) => {
-        if (!prevState && workspaceSlug && issue && issue.project_id)
-          subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issue.project_id, issue.id);
-        return !prevState;
-      });
+      if (workspaceSlug && issue && issue.project_id)
+        await subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issue.project_id, issue.id);
+      setExpanded(true);
     }
   };
 

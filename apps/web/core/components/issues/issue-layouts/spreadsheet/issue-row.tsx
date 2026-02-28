@@ -224,17 +224,17 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
   );
   if (!issueDetail) return null;
 
-  const handleToggleExpand = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleToggleExpand = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
     if (nestingLevel >= 3) {
       handleIssuePeekOverview(issueDetail);
+    } else if (isExpanded) {
+      setExpanded(false);
     } else {
-      setExpanded((prevState) => {
-        if (!prevState && workspaceSlug && issueDetail && issueDetail.project_id)
-          subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issueDetail.project_id, issueDetail.id);
-        return !prevState;
-      });
+      if (workspaceSlug && issueDetail && issueDetail.project_id)
+        await subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issueDetail.project_id, issueDetail.id);
+      setExpanded(true);
     }
   };
 
@@ -279,6 +279,7 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
                 "shadow-[8px_22px_22px_10px_rgba(0,0,0,0.05)]": isScrolled.current,
               }
             )}
+            style={nestingLevel > 0 ? { paddingLeft: subIssueIndentation } : undefined}
           >
             {/* Identifier section - conditionally rendered */}
             {displayProperties?.key && (
@@ -332,9 +333,6 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
                   </div>
                 </Tooltip>
               )}
-
-              {/* sub issues indentation */}
-              {nestingLevel !== 0 && <div style={{ width: subIssueIndentation }} />}
 
               {/* sub-issues chevron */}
               <div className="grid place-items-center size-4">
