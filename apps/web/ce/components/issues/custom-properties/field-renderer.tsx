@@ -19,6 +19,7 @@ type Props = {
   valueJson: Record<string, any>;
   onChange: (propertyId: string, val: Record<string, any>) => void;
   disabled?: boolean;
+  workspaceSlug?: string;
 };
 
 /**
@@ -42,7 +43,7 @@ function extractValue(fieldType: TFieldType, valueJson: Record<string, any>): an
   }
 }
 
-export const FieldRenderer: React.FC<Props> = ({ property, valueJson, onChange, disabled }) => {
+export const FieldRenderer: React.FC<Props> = ({ property, valueJson, onChange, disabled, workspaceSlug }) => {
   const val = extractValue(property.field_type, valueJson);
   const handleChange = (newVal: Record<string, any>) => onChange(property.id, newVal);
 
@@ -50,7 +51,7 @@ export const FieldRenderer: React.FC<Props> = ({ property, valueJson, onChange, 
     case "text":
       return <TextField property={property} value={val} onChange={handleChange} disabled={disabled} />;
     case "rich_text":
-      return <RichTextField property={property} value={val} onChange={handleChange} disabled={disabled} />;
+      return <RichTextField property={property} value={val} onChange={handleChange} disabled={disabled} workspaceSlug={workspaceSlug ?? ""} />;
     case "url":
       return <UrlField property={property} value={val} onChange={handleChange} disabled={disabled} />;
     case "enum":

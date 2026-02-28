@@ -113,6 +113,7 @@ export function WorkItemModalAdditionalProperties(props: TWorkItemModalAdditiona
                     property={def}
                     valueJson={issuePropertyValues[def.id] ?? {}}
                     onChange={handleChange}
+                    workspaceSlug={workspaceSlug}
                   />
                 </div>
               ))}

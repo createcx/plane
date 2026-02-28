@@ -94,6 +94,7 @@ export function WorkItemAdditionalSidebarProperties(props: TWorkItemAdditionalSi
                       valueJson={values[def.id] ?? {}}
                       onChange={handleChange}
                       disabled={!isEditable}
+                      workspaceSlug={workspaceSlug}
                     />
                   </SidebarPropertyListItem>
                 );
