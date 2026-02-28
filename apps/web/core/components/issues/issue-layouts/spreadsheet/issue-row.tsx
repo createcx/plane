@@ -5,7 +5,7 @@
  */
 
 import type { Dispatch, MouseEvent, MutableRefObject, SetStateAction } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
@@ -76,14 +76,33 @@ export const SpreadsheetIssueRow = observer(function SpreadsheetIssueRow(props: 
   } = props;
   // states
   const [isExpanded, setExpanded] = useState<boolean>(false);
+  // router
+  const { workspaceSlug } = useParams();
   // store hooks
   const { subIssues: subIssuesStore } = useIssueDetail(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
   const { issueMap } = useIssues();
 
   // derived values
   const subIssues = subIssuesStore.subIssuesByIssueId(issueId);
+  const issue = issueMap[issueId];
   const isIssueSelected = selectionHelpers.getIsEntitySelected(issueId);
   const isIssueActive = selectionHelpers.getIsEntityActive(issueId);
+
+  // auto-expand first two levels so hierarchy is visible on load
+  useEffect(() => {
+    if (
+      nestingLevel < 2 &&
+      !isExpanded &&
+      issue?.sub_issues_count &&
+      issue.sub_issues_count > 0 &&
+      workspaceSlug &&
+      issue.project_id
+    ) {
+      subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issue.project_id, issueId).then(() => {
+        setExpanded(true);
+      });
+    }
+  }, [issueId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>

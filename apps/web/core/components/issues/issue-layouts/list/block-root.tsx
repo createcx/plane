@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import type { FC, MutableRefObject } from "react";
+import type { MutableRefObject } from "react";
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { attachInstruction, extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
@@ -74,12 +75,31 @@ export const IssueBlockRoot = observer(function IssueBlockRoot(props: Props) {
   const [isCurrentBlockDragging, setIsCurrentBlockDragging] = useState(false);
   // ref
   const issueBlockRef = useRef<HTMLDivElement | null>(null);
+  // router
+  const { workspaceSlug } = useParams();
   // hooks
   const { isMobile } = usePlatformOS();
   // store hooks
   const { subIssues: subIssuesStore } = useIssueDetail(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
 
   const isSubIssue = nestingLevel !== 0;
+  const issue = issuesMap[issueId];
+
+  // auto-expand first two levels so hierarchy is visible on load
+  useEffect(() => {
+    if (
+      nestingLevel < 2 &&
+      !isExpanded &&
+      issue?.sub_issues_count &&
+      issue.sub_issues_count > 0 &&
+      workspaceSlug &&
+      issue.project_id
+    ) {
+      subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issue.project_id, issueId).then(() => {
+        setExpanded(true);
+      });
+    }
+  }, [issueId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const blockElement = issueBlockRef.current;
