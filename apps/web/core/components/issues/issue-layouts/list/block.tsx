@@ -206,8 +206,8 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
         }}
       >
         <div className="flex gap-2 w-full truncate">
-          <div className="flex flex-grow items-center gap-0.5 truncate">
-            <div className="flex items-center gap-1" style={isSubIssue ? { marginLeft } : {}}>
+          <div className="flex flex-grow items-center gap-0.5 truncate" style={isSubIssue ? { paddingLeft: marginLeft } : {}}>
+            <div className="flex items-center gap-1">
               {/* select checkbox */}
               {projectId && canSelectIssues && !isEpic && (
                 <Tooltip
