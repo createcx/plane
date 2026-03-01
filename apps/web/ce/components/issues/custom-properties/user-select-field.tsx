@@ -1,4 +1,5 @@
 import React from "react";
+import { X } from "lucide-react";
 import { Input } from "@plane/ui";
 import type { TIssueTypeProperty } from "@/plane-web/types/issue-types/issue-property-values";
 
@@ -29,7 +30,7 @@ export const UserSelectField: React.FC<Props> = ({ property, value, onChange, di
                 onClick={() => onChange({ value: ids.filter((i) => i !== id) })}
                 className="text-placeholder hover:text-danger-primary"
               >
-                x
+                <X className="h-2.5 w-2.5" />
               </button>
             )}
           </span>
