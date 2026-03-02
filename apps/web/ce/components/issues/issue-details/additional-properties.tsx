@@ -80,7 +80,7 @@ export function WorkItemAdditionalSidebarProperties(props: TWorkItemAdditionalSi
             {CATEGORY_LABELS[cat]}
           </button>
           {!collapsed[cat] && (
-            <div className="space-y-0.5 ml-1">
+            <div className="space-y-0.5 pl-5">
               {grouped[cat].map((def) => {
                 const CategoryIcon = CATEGORY_ICONS[def.category as TPropertyCategory] ?? FileText;
                 return (
