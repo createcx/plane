@@ -30,6 +30,7 @@ from plane.utils.content_validator import (
     validate_html_content,
     validate_binary_data,
 )
+from plane.utils.issue_hierarchy import validate_issue_type_hierarchy
 
 from .base import BaseSerializer
 from .cycle import CycleLiteSerializer, CycleSerializer
@@ -144,6 +145,17 @@ class IssueSerializer(BaseSerializer):
             ).exists()
         ):
             raise serializers.ValidationError("Estimate point is not valid please pass a valid estimate_point_id")
+
+        # Validate issue type hierarchy
+        type_obj = data.get("type")
+        type_id = type_obj.id if hasattr(type_obj, "id") else None
+        parent = data.get("parent")
+        parent_id = parent.id if hasattr(parent, "id") else parent if parent else None
+        issue_id = self.instance.id if self.instance else None
+        if type_id:
+            is_valid, error_msg = validate_issue_type_hierarchy(type_id, parent_id=parent_id, issue_id=issue_id)
+            if not is_valid:
+                raise serializers.ValidationError({"type_id": error_msg})
 
         return data
 
