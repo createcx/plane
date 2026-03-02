@@ -3,7 +3,7 @@
  * for the issue creation/edit modal.
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { observer } from "mobx-react";
 import type { ISearchIssueResponse, TIssue } from "@plane/types";
 import { IssueModalContext } from "@/components/issues/issue-modal/context";
@@ -13,10 +13,37 @@ import type {
   TActiveAdditionalPropertiesProps,
 } from "@/components/issues/issue-modal/context/issue-modal-context";
 import { useUser } from "@/hooks/store/user/user-user";
+import { useWorkspace } from "@/hooks/store/use-workspace";
 import type { TIssuePropertyValues, TIssuePropertyValueErrors } from "@/plane-web/types/issue-types/issue-property-values";
 import { IssuePropertyService } from "@/services/issue/issue_property.service";
-
 const propertyService = new IssuePropertyService();
+
+// Cache the default issue type id (workspace-scoped, fetched once)
+let defaultTypeIdCache: string | null = null;
+let defaultTypeIdFetching = false;
+
+async function fetchDefaultTypeId(workspaceSlug: string): Promise<string | null> {
+  if (defaultTypeIdCache) return defaultTypeIdCache;
+  if (defaultTypeIdFetching) return null;
+  defaultTypeIdFetching = true;
+  try {
+    const res = await fetch(`/api/workspaces/${workspaceSlug}/issue-types/`, {
+      credentials: "include",
+    });
+    const types = await res.json();
+    const list = Array.isArray(types) ? types : types?.results ?? [];
+    const defaultType = list.find((t: any) => t.is_default) ?? list.find((t: any) => t.name === "Task");
+    if (defaultType) {
+      defaultTypeIdCache = defaultType.id;
+      return defaultType.id;
+    }
+  } catch (err) {
+    console.warn("[IssueModalProvider] Failed to fetch default issue type:", err);
+  } finally {
+    defaultTypeIdFetching = false;
+  }
+  return null;
+}
 
 export type TIssueModalProviderProps = {
   templateId?: string;
@@ -32,6 +59,23 @@ export const IssueModalProvider = observer(function IssueModalProvider(props: TI
   const [issuePropertyValueErrors, setIssuePropertyValueErrors] = useState<TIssuePropertyValueErrors>({});
   const { projectsWithCreatePermissions } = useUser();
   const projectIdsWithCreatePermissions = Object.keys(projectsWithCreatePermissions ?? {});
+  const { currentWorkspace } = useWorkspace();
+  const workspaceSlug = currentWorkspace?.slug;
+  const defaultTypeIdRef = useRef<string | null>(defaultTypeIdCache);
+
+  // Pre-fetch default type id
+  useEffect(() => {
+    if (workspaceSlug && !defaultTypeIdRef.current) {
+      fetchDefaultTypeId(workspaceSlug).then((id) => {
+        if (id) defaultTypeIdRef.current = id;
+      });
+    }
+  }, [workspaceSlug]);
+
+  const getIssueTypeIdOnProjectChange = useCallback(
+    (_projectId: string): string | null => defaultTypeIdRef.current ?? defaultTypeIdCache,
+    []
+  );
 
   const handlePropertyValuesValidation = useCallback(
     (_props: TPropertyValuesValidationProps): boolean => {
@@ -87,7 +131,7 @@ export const IssueModalProvider = observer(function IssueModalProvider(props: TI
         setIssuePropertyValues,
         issuePropertyValueErrors,
         setIssuePropertyValueErrors,
-        getIssueTypeIdOnProjectChange: () => null,
+        getIssueTypeIdOnProjectChange,
         getActiveAdditionalPropertiesLength,
         handlePropertyValuesValidation,
         handleCreateUpdatePropertyValues,

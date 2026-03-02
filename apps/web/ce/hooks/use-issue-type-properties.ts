@@ -58,7 +58,9 @@ async function fetchDefinitions(workspaceSlug: string, typeId: string) {
 }
 
 async function fetchValues(workspaceSlug: string, projectId: string, issueId: string) {
-  if (valCache[issueId] || valFetching[issueId]) return;
+  if (valFetching[issueId]) return;
+  // Only skip if we already have a non-empty cache entry
+  if (valCache[issueId] && Object.keys(valCache[issueId]).length > 0) return;
   valFetching[issueId] = true;
 
   try {
